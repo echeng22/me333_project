@@ -1,6 +1,7 @@
 #include "positioncontrol.h"
 #include "utility.h"
 #include "isense.h"
+#include "NU32.h"
 #include <stdio.h>
 
 static volatile double Pos_P_Control;
@@ -12,24 +13,47 @@ static volatile int EPosINT = 0;
 static volatile double EPrev = 0;
 static volatile double POSControl = 0;
 
+static int *Traj;
+static double *TrajDegrees;
+static volatile int numSamples = 0;
+
 void __ISR(_TIMER_4_VECTOR, IPL6SOFT) PositionControl(void)
 {
-    if(getMode() == 3)
+    static int counter = 0;
+    switch(getMode())
     {
-        char message[10];
-        int error = Angle - encoder_ticks(1);
-        EPosINT = EPosINT + error;
-        double Pcontrol = Pos_P_Control * error + Pos_I_Control * EPosINT + Pos_D_Control * ((error - EPrev)/.005);
-        // sprintf(message, "position %f\r\n", Pcontrol);
-        // NU32_WriteUART3(message);
-        EPrev = error;
-        POSControl = Pcontrol;
-    }
-    else if(getMode() == 0)
-    {
-        EPrev = 0;
-        EPosINT = 0;
-        POSControl = 0;
+        case 0:
+        {
+            EPrev = 0;
+            EPosINT = 0;
+            POSControl = 0;
+            counter = 0;
+        }
+        case 3:
+        {
+            int error = Angle - encoder_ticks(1);
+            EPosINT = EPosINT + error;
+            double Pcontrol = Pos_P_Control * error + Pos_I_Control * EPosINT + Pos_D_Control * ((error - EPrev)/.005);
+            EPrev = error;
+            POSControl = Pcontrol;
+        }
+        case 4:
+        {
+            int trajPoint = Traj[counter];
+            int error = trajPoint - encoder_ticks(1);
+            TrajDegrees[counter] = getDegree();
+            EPosINT = EPosINT + error;
+            double Pcontrol = Pos_P_Control * error + Pos_I_Control * EPosINT + Pos_D_Control * ((error - EPrev)/.005);
+            EPrev = error;
+            POSControl = Pcontrol;
+            counter++;
+            if(counter > numSamples)
+            {
+                Angle = Traj[counter - 1];
+                counter = 0;
+                setMode(HOLD);
+            }
+        }
     }
     IFS0bits.T4IF = 0;
 }
@@ -91,4 +115,34 @@ double getPosD()
 double getPosControl()
 {
     return POSControl;
+}
+
+void loadTraj()
+{
+    int i, point = 0;
+    char buffer[10];
+    NU32_ReadUART3(buffer, 10);
+    sscanf(buffer,"%d",&numSamples);
+    Traj = (int *) malloc(numSamples * sizeof(int));
+    TrajDegrees = (double *) malloc(numSamples * sizeof(double));
+    for(i=0; i < numSamples; i++)
+    {
+        NU32_ReadUART3(buffer, 10);
+        sscanf(buffer,"%d",&point);
+        Traj[i] = point;
+    }
+
+}
+
+void sendTrajDegree()
+{
+    int i;
+    char message[100];
+    sprintf(message,"%d\r\n",numSamples);
+    NU32_WriteUART3(message);
+    for(i=0;i < numSamples; i++)
+    {
+        sprintf(message, "%f\r\n", TrajDegrees[i]);
+        NU32_WriteUART3(message);
+    }
 }

@@ -68,16 +68,20 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         }
         case 3: //HOLD
         {
-            char message[10];
             double sense_current = get_Current();
-            // double test = getPosCdontrol();
-            // sprintf(message, "current control %f\r\n", test);
-            // NU32_WriteUART3(message);
             double error = getPosControl() - sense_current;
-            // sprintf(message, "current control error %f\r\n", error );
-            // NU32_WriteUART3(message);
-            // sprintf(message, "current control current %f\r\n\n", sense_current);
-            // NU32_WriteUART3(message);
+            EINT = EINT + error;
+
+            double control = KP_Control * error + KI_Control * EINT;
+
+            inputPWM(control);
+            setDutyCycle();
+            break;
+        }
+        case 4: //TRACK
+        {
+            double sense_current = get_Current();
+            double error = getPosControl() - sense_current;
             EINT = EINT + error;
 
             double control = KP_Control * error + KI_Control * EINT;

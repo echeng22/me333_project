@@ -141,6 +141,21 @@ int main()
         setMode(HOLD);
         break;
       }
+      case 'm': //Power Off Motor, Set PWM to 0
+      {
+        loadTraj();
+        break;
+      }
+      case 'n': //Power Off Motor, Set PWM to 0
+      {
+        loadTraj();
+        break;
+      }
+      case 'o': //Power Off Motor, Set PWM to 0
+      {
+        setMode(TRACK);
+        break;
+      }
       case 'p': //Power Off Motor, Set PWM to 0
       {
         setMode(IDLE);

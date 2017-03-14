@@ -95,6 +95,22 @@ while ~has_quit
         case 'l'
             angle = input('Enter a desired angle position: ');
             fprintf(mySerial,'%f\n',angle);
+        case 'm'
+            traj = input('Enter a desired step trajectory: ');
+            steptraj = genRef(traj,'step');
+            fprintf(mySerial,'%d\n',length(steptraj));
+            for i=1:length(steptraj)
+                ticks = int8((((steptraj(i)/360) * (448*4)) + 32768));
+                fprintf(mySerial,'%d\n',ticks);                
+            end            
+        case 'n'
+            traj = input('Enter a desired cubic trajectory: ');
+            cubictraj = genRef(traj,'step');
+            fprintf(mySerial,'%d\n',length(cubictraj));
+            for i=1:length(cubictraj)
+                ticks = int8((((cubictraj(i)/360) * (448*4)) + 32768));
+                fprintf(mySerial,'%d\n',ticks);                
+            end            
         case 'p'
             fprintf('Powering off motor...');
         case 'q'
