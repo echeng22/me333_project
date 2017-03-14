@@ -1,0 +1,101 @@
+#include "currentcontrol.h"
+#include "utility.h"
+
+void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
+{
+    switch(myMode)
+    {
+        case 0:
+        {
+            setDutyCycle(0);
+            break;
+        }
+        case 1:
+        {
+            setDutyCycle(50);
+            break;
+        }
+    }
+    IFS0bits.T2IF = 0;
+}
+
+void init_CControl()
+{
+    __builtin_disable_interrupts();
+    //Make Pin RD3 a digital output to control direction
+    TRISDbits.TRISD3 = 0;
+
+    //Setup Timer2 for 5KHz ISR
+    PR2 = 16000;
+    TMR2 = 0;
+    T2CONbits.TCKPS = 0;
+
+    //Setup Timer3 for 20KHz PWM
+    PR3 = 4000;
+    TMR3 = 0;
+    T3CONbits.TCKPS = 0;
+
+    //Setup PWM
+    OC1CONbits.OCTSEL = 1; //Use Timer 3
+    OC1CONbits.OCM = 6;
+    OC1RS = 2000;
+    OC1R = 0;
+
+    //Setting Priorities for ISR
+    IPC2bits.T2IP = 5;
+    IPC2bits.T2IS = 0;
+    IFS0bits.T2IF = 0;
+    IEC0bits.T2IE = 1;
+
+    //Turning on Timers, OC, and Digital Output
+    T2CONbits.ON = 1;
+    T3CONbits.ON = 1;
+    OC1CONbits.ON = 1;
+
+    __builtin_enable_interrupts();
+}
+
+
+
+void setDutyCycle(int DC)
+{
+    if(DC < 0)
+    {
+        setDirection(0);
+        DC = DC * - 1;
+    }
+    else
+    {
+        setDirection(1);
+    }
+    OC1RS = (unsigned int)(4000 * DC/100);
+}
+
+void setDirection(int direction)
+{
+    if(direction)
+    {
+        LATDbits.LATD3 = 1;
+    }
+    else
+    {
+        LATDbits.LATD3 = 0;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
