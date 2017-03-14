@@ -76,7 +76,7 @@ while ~has_quit
         case 'h'
             KP = fscanf(mySerial,'%f');
             KI = fscanf(mySerial,'%f');
-            fprintf('Kp: %.2f, Ki: %.2f, Kd: %.2f\n\n',KP, KI);
+            fprintf('Kp: %.2f, Ki: %.2f\n\n',KP, KI);
         case 'i'
             Kp = input('Enter Kp current gains: ');
             fprintf(mySerial,'%f\n',Kp);
@@ -95,6 +95,8 @@ while ~has_quit
         case 'l'
             angle = input('Enter a desired angle position: ');
             fprintf(mySerial,'%f\n',angle);
+        case 'p'
+            fprintf('Powering off motor...');
         case 'q'
             has_quit = true;             % exit client
         case 'r'                      

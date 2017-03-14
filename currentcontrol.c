@@ -28,6 +28,7 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         {
             inputPWM(0);
             setDutyCycle();
+            EINT = 0;
             break;
         }
         case 1: //PWM
@@ -67,8 +68,16 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         }
         case 3: //HOLD
         {
+            char message[10];
             double sense_current = get_Current();
+            // double test = getPosCdontrol();
+            // sprintf(message, "current control %f\r\n", test);
+            // NU32_WriteUART3(message);
             double error = getPosControl() - sense_current;
+            // sprintf(message, "current control error %f\r\n", error );
+            // NU32_WriteUART3(message);
+            // sprintf(message, "current control current %f\r\n\n", sense_current);
+            // NU32_WriteUART3(message);
             EINT = EINT + error;
 
             double control = KP_Control * error + KI_Control * EINT;
@@ -136,10 +145,10 @@ void setDutyCycle()
         setDirection(1);
     }
 
-    // if(DC_Value > 100)
-    // {
-    //     DC_Value = 100;
-    // }
+    if(DC_Value > 100)
+    {
+        DC_Value = 100;
+    }
     OC1RS = (unsigned int)(4000 * tempDC/100);
 }
 

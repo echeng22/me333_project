@@ -44,14 +44,15 @@ int get_ADC()
 double get_Current()
 {
     double ADC = get_ADC();
-    if(ADC > 503)
-    {
-        return (1.942*ADC) - 974.081;
-    }
-    else
-    {
-        return -((-1.998*ADC) + 1001.68);
-    }
+    return (1.966*ADC) - 987.882;
+    // if(ADC > 503)
+    // {
+    //     return (1.942*ADC) - 974.081;
+    // }
+    // else
+    // {
+    //     return -((-1.998*ADC) + 1001.68);
+    // }
 }
 
 

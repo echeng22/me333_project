@@ -48,14 +48,13 @@ int main()
       }
       case 'd':
       {
-        int counter = encoder_ticks(1);
-        double degree = ((counter - 32768)/(448.0*4)) * 360;
-        sprintf(buffer,"%.2f\n\r", degree);
+        sprintf(buffer,"%.2f\n\r", getDegree());
         NU32_WriteUART3(buffer);
         break;
       }
       case 'e': //
       {
+        setMode(IDLE);
         encoder_ticks(0);
         break;
       }
@@ -85,9 +84,9 @@ int main()
       {
         double Kp = getKP();
         double Ki = getKI();
-        sprintf(buffer,"%.2f\r\n", Kp);
+        sprintf(buffer,"%f\r\n", Kp);
         NU32_WriteUART3(buffer);
-        sprintf(buffer,"%.2f\r\n", Ki);
+        sprintf(buffer,"%f\r\n", Ki);
         NU32_WriteUART3(buffer);
         break;
       }
@@ -113,11 +112,11 @@ int main()
         double Kp = getPosP();
         double Ki = getPosI();
         double Kd = getPosD();
-        sprintf(buffer,"%.2f\r\n", Kp);
+        sprintf(buffer,"%f\r\n", Kp);
         NU32_WriteUART3(buffer);
-        sprintf(buffer,"%.2f\r\n", Ki);
+        sprintf(buffer,"%f\r\n", Ki);
         NU32_WriteUART3(buffer);
-        sprintf(buffer,"%.2f\r\n", Kd);
+        sprintf(buffer,"%f\r\n", Kd);
         NU32_WriteUART3(buffer);
         break;
       }

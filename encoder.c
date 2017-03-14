@@ -1,4 +1,4 @@
-#include "encoder.h"                   
+#include "encoder.h"
 #include <xc.h>
 
 static int encoder_command(int read) { // send a command to the encoder chip
@@ -29,9 +29,15 @@ void encoder_init(void) {
   SPI4CONbits.MSTEN = 1;    // master mode
   SPI4CONbits.MSSEN = 1;    // slave select enable
   SPI4CONbits.MODE16 = 1;   // 16 bit mode
-  SPI4CONbits.MODE32 = 0; 
+  SPI4CONbits.MODE32 = 0;
   SPI4CONbits.SMP = 1;      // sample at the end of the clock
   SPI4CONbits.ON = 1;       // turn SPI on
+}
+
+double getDegree()
+{
+    int counter = encoder_ticks(1);
+    return ((counter - 32768)/(448.0*4)) * 360;
 }
 
 // you write functions to reset encoder and return angle in 1/10th degrees

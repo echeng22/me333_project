@@ -12,15 +12,18 @@ static volatile int EPosINT = 0;
 static volatile double EPrev = 0;
 static volatile double POSControl = 0;
 
-void __ISR(_TIMER_4_VECTOR, IPL4SOFT) PositionControl(void)
+void __ISR(_TIMER_4_VECTOR, IPL6SOFT) PositionControl(void)
 {
     if(getMode() == 3)
     {
+        char message[10];
         int error = Angle - encoder_ticks(1);
         EPosINT = EPosINT + error;
-        double control = Pos_P_Control * error + Pos_I_Control * EPosINT + Pos_D_Control * ((error - EPrev)/.005);
+        double Pcontrol = Pos_P_Control * error + Pos_I_Control * EPosINT + Pos_D_Control * ((error - EPrev)/.005);
+        // sprintf(message, "position %f\r\n", Pcontrol);
+        // NU32_WriteUART3(message);
         EPrev = error;
-        POSControl = control;
+        POSControl = Pcontrol;
     }
     else if(getMode() == 0)
     {
@@ -40,7 +43,7 @@ void init_PControl()
     T4CONbits.TCKPS = 6;
 
     //Setting Priorities for 200 Hz ISR
-    IPC4bits.T4IP = 4;
+    IPC4bits.T4IP = 6;
     IPC4bits.T4IS = 0;
     IFS0bits.T4IF = 0;
     IEC0bits.T4IE = 1;
