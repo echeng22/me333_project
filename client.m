@@ -51,26 +51,40 @@ while ~has_quit
     
     % take the appropriate action
     switch selection
-        case 'c'                         % example operation
-            n = fscanf(mySerial,'%d');   % get the incremented number back
-            fprintf('The motor angle is: %d counts\n\n',n);     % print it to the screen
-        case 'd'                         % example operation
-            n = fscanf(mySerial,'%f');   % get the incremented number back
-            fprintf('The motor angle is: %.2f degrees\n\n',n);     % print it to the screen
+        case 'a'
+            ADCcount = fscanf(mySerial,'%d');
+            fprintf('Current sensor in ADC counts: %d counts\n\n',ADCcount);
+        case 'b'                         
+            current = fscanf(mySerial,'%f');   
+            fprintf('Current sensor in mA: %.2f degrees\n\n',current);
+        case 'c'                      
+            n = fscanf(mySerial,'%d'); 
+            fprintf('The motor angle is: %d counts\n\n',n);  
+        case 'd'                        
+            n = fscanf(mySerial,'%f');  
+            fprintf('The motor angle is: %.2f degrees\n\n',n); 
         case 'e'
             fprintf('Motor position is now at zero position.\n\n');
         case 'f'
             DC = input('Enter a Duty Cycle (-100 to 100): ');
             fprintf(mySerial,'%f\n',DC);
-            
         case 'g'
+            Kp = input('Enter Kp current gains: ');
+            fprintf(mySerial,'%f\n',Kp);
+            Ki = input('Enter Ki current gains: ');
+            fprintf(mySerial,'%f\n',Ki);            
+        case 'h'
+            KP = fscanf(mySerial,'%f');
+            KI = fscanf(mySerial,'%f');
+            fprintf('Kp: %.2f, Ki: %.2f, Kd: %.2f\n\n',KP, KI);
+        case 'i'
             Kp = input('Enter Kp current gains: ');
             fprintf(mySerial,'%f\n',Kp);
             Ki = input('Enter Ki current gains: ');
             fprintf(mySerial,'%f\n',Ki);            
             Kd = input('Enter Kd current gains: ');
             fprintf(mySerial,'%f\n',Kd);            
-        case 'h'
+        case 'j'
             KP = fscanf(mySerial,'%f');
             KI = fscanf(mySerial,'%f');
             KD = fscanf(mySerial,'%f');
@@ -78,8 +92,16 @@ while ~has_quit
         case 'k'
             fprintf('Testing current gains\n\n');
             read_plot_matrix(mySerial);
+        case 'l'
+            angle = input('Enter a desired angle position: ');
+            fprintf(mySerial,'%f\n',angle);
         case 'q'
             has_quit = true;             % exit client
+        case 'r'                      
+            s = fscanf(mySerial,'%s');
+            fprintf('Current mode is ');  
+            fprintf(s);  
+            fprintf('\n');
         otherwise
             fprintf('Invalid Selection %c\n', selection);
     end

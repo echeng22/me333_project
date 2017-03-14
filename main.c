@@ -3,6 +3,7 @@
 #include "utility.h"
 #include "isense.h"
 #include "currentcontrol.h"
+#include "positioncontrol.h"
 #include <stdio.h>
 // include other header files here
 
@@ -15,6 +16,7 @@ int main()
   encoder_init();
   init_ADC();
   init_CControl();
+  init_PControl();
   setMode(IDLE);
   NU32_LED1 = 1;  // turn off the LEDs
   NU32_LED2 = 1;
@@ -101,16 +103,16 @@ int main()
         NU32_ReadUART3(buffer,BUF_SIZE);
         sscanf(buffer, "%f", &Kd);
 
-        setKP(Kp);
-        setKI(Ki);
-        setKD(Kd);
+        setPosP(Kp);
+        setPosI(Ki);
+        setPosD(Kd);
         break;
       }
       case 'j':
       {
-        double Kp = getKP();
-        double Ki = getKI();
-        double Kd = getKD();
+        double Kp = getPosP();
+        double Ki = getPosI();
+        double Kd = getPosD();
         sprintf(buffer,"%.2f\r\n", Kp);
         NU32_WriteUART3(buffer);
         sprintf(buffer,"%.2f\r\n", Ki);
@@ -127,6 +129,17 @@ int main()
           ;
         }
         sendData();
+        break;
+      }
+      case 'l':
+      {
+        double ang = 0;
+        int encoder_ang;
+        NU32_ReadUART3(buffer,BUF_SIZE);
+        sscanf(buffer, "%f", &ang);
+        encoder_ang = (int)(((ang/360) * (448*4)) + 32768);
+        setAngle(encoder_ang);
+        setMode(HOLD);
         break;
       }
       case 'p': //Power Off Motor, Set PWM to 0

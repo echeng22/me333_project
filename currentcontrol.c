@@ -1,5 +1,6 @@
 #include "currentcontrol.h"
 #include "utility.h"
+#include "positioncontrol.h"
 #include "isense.h"
 #include <stdio.h>
 
@@ -9,7 +10,9 @@ static int DC_Value;
 
 static volatile double KP_Control;
 static volatile double KI_Control;
-static volatile double KD_Control;
+
+
+static volatile double PosD_Control;
 
 static int current_counter;
 static volatile double REFarray[100];
@@ -17,7 +20,6 @@ static volatile double PIarray[100];
 static double REFCurrent = 200;
 
 static volatile double EINT = 0;
-
 
 void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
 {
@@ -28,6 +30,7 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         case 0: //IDLE
         {
             inputPWM(0);
+            EINT = 0;
             setDutyCycle();
             break;
         }
@@ -51,8 +54,6 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
 
             REFarray[plotind] = REFCurrent;
             PIarray[plotind] = sense_current;
-            // sprintf(message, "%f %f\r\n", REFarray[plotind], PIarray[plotind]);
-            // NU32_WriteUART3(message);
 
             inputPWM(control);
             setDutyCycle();
@@ -70,6 +71,13 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         }
         case 3: //HOLD
         {
+            double sense_current = get_Current();
+            double error = getPosControl() - sense_current;
+            EINT = EINT + error;
+
+            double control = KP_Control * error + KI_Control * EINT;
+
+            inputPWM(control);
             setDutyCycle();
             break;
         }
@@ -95,11 +103,6 @@ void init_CControl()
     TMR3 = 0;
     T3CONbits.TCKPS = 0;
 
-    //Setup Timer4 for 200Hz ISR
-    PR4 = 6250;
-    TMR4 = 0;
-    T2CONbits.TCKPS = 6;
-
     //Setup PWM
     OC1CONbits.OCTSEL = 1; //Use Timer 3
     OC1CONbits.OCM = 6;
@@ -112,16 +115,9 @@ void init_CControl()
     IFS0bits.T2IF = 0;
     IEC0bits.T2IE = 1;
 
-    //Setting Priorities for 200 Hz ISR
-    IPC4bits.T4IP = 4;
-    IPC4bits.T4IS = 0;
-    IFS0bits.T4IF = 0;
-    IEC0bits.T4IE = 1;
-
     //Turning on Timers, OC, and Digital Output
     T2CONbits.ON = 1;
     T3CONbits.ON = 1;
-    T4CONbits.ON = 1;
     OC1CONbits.ON = 1;
     DC_Value = 0;
     KP_Control = 0;
@@ -142,6 +138,11 @@ void setDutyCycle()
     else
     {
         setDirection(1);
+    }
+
+    if(DC_Value > 100)
+    {
+        DC_Value = 100;
     }
     OC1RS = (unsigned int)(4000 * tempDC/100);
 }
@@ -189,15 +190,7 @@ double getKI()
     return KI_Control;
 }
 
-void setKD(double KD)
-{
-    KD_Control = KD;
-}
 
-double getKD()
-{
-    return KD_Control;
-}
 
 void sendData()
 {
@@ -211,7 +204,6 @@ void sendData()
             NU32_WriteUART3(message);
     }
 }
-
 
 
 
