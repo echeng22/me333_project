@@ -37,7 +37,7 @@ void init_PControl()
     //Setup Timer4 for 200Hz ISR
     PR4 = 6250;
     TMR4 = 0;
-    T2CONbits.TCKPS = 6;
+    T4CONbits.TCKPS = 6;
 
     //Setting Priorities for 200 Hz ISR
     IPC4bits.T4IP = 4;

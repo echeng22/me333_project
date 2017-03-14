@@ -11,9 +11,6 @@ static int DC_Value;
 static volatile double KP_Control;
 static volatile double KI_Control;
 
-
-static volatile double PosD_Control;
-
 static int current_counter;
 static volatile double REFarray[100];
 static volatile double PIarray[100];
@@ -30,7 +27,6 @@ void __ISR(_TIMER_2_VECTOR, IPL5SOFT) Control(void)
         case 0: //IDLE
         {
             inputPWM(0);
-            EINT = 0;
             setDutyCycle();
             break;
         }
@@ -140,10 +136,10 @@ void setDutyCycle()
         setDirection(1);
     }
 
-    if(DC_Value > 100)
-    {
-        DC_Value = 100;
-    }
+    // if(DC_Value > 100)
+    // {
+    //     DC_Value = 100;
+    // }
     OC1RS = (unsigned int)(4000 * tempDC/100);
 }
 
